@@ -55,7 +55,7 @@ Operator-supplied command results, sanitized for publication:
 - SSH to the Wazuh manager succeeded.
 - On the manager, `agent_control -l` reported **LAB-Ubuntu** and **OPNsense** as **Active**, with the manager's local entry also Active/Local.
 
-**Additional ingestion evidence:** The manager's `alerts.json` contained recent agent 001 (`LAB-Ubuntu`) events for Wazuh rules **5402** (successful sudo to root), **5501** (PAM session opened), and **5502** (PAM session closed), collected from `journald`. This verifies that LAB-Ubuntu security telemetry is ingested, decoded, matched to built-in rules, and written to local alert output. A manual grep for `SOC-VALIDATION` returned no alert matches; it remains unverified whether that test event was generated, collected, or filtered below the alert threshold.
+**Additional ingestion evidence:** The manager's `alerts.json` contained recent agent 001 (`LAB-Ubuntu`) events for Wazuh rules **5402** (successful sudo to root), **5501** (PAM session opened), and **5502** (PAM session closed), collected from `journald`. This verifies that LAB-Ubuntu security telemetry is ingested, decoded, matched to built-in rules, and written to local alert output. A manual grep for `SOC-VALIDATION` returned no alert matches. Subsequent source verification confirmed two `SOC-VALIDATION` records in LAB-Ubuntu's local journal at 19:18:00 and 19:20:07 on November 18 (local time). Forwarding and alert matching for these custom events remain unverified.
 
 **Limitations:** Local alert output does not establish dashboard indexing, complete source coverage, detection efficacy, or service uptime. Earlier connection failures may reflect startup sequencing after the infrastructure outage, but that cause is not proven.
 
@@ -92,7 +92,9 @@ No performance claims will be published until measured in a reproducible test.
 - [ ] Verify log rotation, available disk space and file permissions.
 - [x] Verify Wazuh manager is accessible and registered LAB-Ubuntu and OPNsense agents report **Active** (2026-11-18 local / 2026-11-19 UTC).
 - [x] Verify LAB-Ubuntu authentication and sudo events reach the manager and generate alerts in `alerts.json`.
-- [ ] Confirm Wazuh dashboard indexing and searching; test a unique custom event (not yet present in alerts.json).
+- [x] Verify two uniquely tagged `SOC-VALIDATION` events are present in the source Ubuntu journal.
+- [ ] Determine whether the custom events are ingested, and whether built-in detection rules match them.
+- [ ] Confirm Wazuh dashboard indexing and searching.
 - [ ] Produce one authorized test case, with timestamps and sanitized evidence.
 - [ ] Document triage decision, owner, containment criteria and rollback.
 - [ ] Identify single points of failure and recovery dependencies.
