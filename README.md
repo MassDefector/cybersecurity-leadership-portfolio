@@ -18,14 +18,14 @@ This portfolio documents independent projects designed to demonstrate practical 
 ### 01 — Enterprise Security Architecture
 **Status: Documentation in progress**
 
-Design and operation of a segmented virtual environment using Proxmox VE, OPNsense, and Linux systems.
+[Architecture documentation](01-security-architecture/README.md) covers a segmented virtual environment using Proxmox VE, OPNsense, and Linux systems. A [storage availability incident case study](01-security-architecture/storage-availability-incident.md) records an interruption, recovery decisions, and open resilience risks.
 
 **Focus:** Network segmentation, firewall policy, virtualization, secure infrastructure, and architectural risk management.
 
 ### 02 — Security Operations & Monitoring
 **Status: Documentation in progress**
 
-Security monitoring and centralized logging within an isolated cybersecurity laboratory.
+[Security Operations & Monitoring](02-security-operations/README.md) documents centralized logging, planned Wazuh validation, investigation workflows, metrics, and operational leadership decisions within an isolated cybersecurity laboratory.
 
 **Focus:** Security telemetry, log analysis, threat detection, and incident investigation.
 
