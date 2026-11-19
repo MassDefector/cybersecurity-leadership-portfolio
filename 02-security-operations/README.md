@@ -75,7 +75,29 @@ Observed test output:
 - Phase 2: `No decoder matched`. This did not prevent rule evaluation against the pre-decoded program name.
 - Phase 3 selected rule **100108**, level **5**, description **Authorized SOC validation event detected**, with **Alert to be generated**.
 
-**Important limitation:** This is an **offline rule-engine test**. A fresh live event, post-deployment manager restart, agent ingestion, and matching alert in `alerts.json` are **not yet verified**. Do not describe this as end-to-end detection until those checks pass.
+**Live end-to-end validation: VERIFIED.** After the offline rule test, a fresh LAB-Ubuntu event was received and recorded as a level-5 alert by the manager. This demonstrates the event path from Ubuntu journal via Wazuh agent to manager rule matching and local alert output. Dashboard search/indexing, overall detection coverage, and sustained collection remain unverified.
+
+## End-to-end detection evidence — verified November 18, 2026 (local)
+
+A fresh authorized test event from LAB-Ubuntu generated the following observed manager-side alert (sensitive host IP details omitted):
+
+| Field | Observed result |
+| --- | --- |
+| Source agent | `001` — LAB-Ubuntu |
+| Collection location | `journald` |
+| Pre-decoded program | `SOC-VALIDATION` |
+| Event payload | `Authorized SOC telemetry validation` |
+| Rule matched | `100108` |
+| Alert description | `Authorized SOC validation event detected` |
+| Alert level | `5` |
+| Event timestamp | `2026-11-19 03:34:04 UTC` (syslog precision: 1 second) |
+| Manager alert timestamp | `2026-11-19 03:34:05.752 UTC` |
+| Alert output | `/var/ossec/logs/alerts/alerts.json` |
+| Outcome | **PASS — local manager alert generated from live endpoint event** |
+
+**Observed path:** Source system journal → enrolled Wazuh agent → Wazuh manager → custom rule 100108 → `alerts.json`.
+
+**Measurement caveat:** The source event timestamp has one-second precision, so the apparent ~1.75-second difference is illustrative, not a validated end-to-end latency SLA. This one successful event does not establish detection coverage, retention or sustained availability.
 
 ## Investigation workflow
 
@@ -112,9 +134,9 @@ No performance claims will be published until measured in a reproducible test.
 - [x] Verify LAB-Ubuntu authentication and sudo events reach the manager and generate alerts in `alerts.json`.
 - [x] Verify two uniquely tagged `SOC-VALIDATION` events are present in the source Ubuntu journal.
 - [x] Validate rule 100108 using `wazuh-logtest` (offline detection-engine test).
-- [ ] Restart the manager in a planned lab maintenance window, generate a new live event, and confirm rule 100108 in manager alerts.
+- [x] Generate a new live LAB-Ubuntu event and verify rule 100108 in manager `alerts.json` (confirmed 2026-11-19 03:34 UTC).
 - [ ] Confirm Wazuh dashboard indexing and searching.
-- [ ] Produce one authorized test case, with timestamps and sanitized evidence.
+- [x] Produce one authorized detection test case, with timestamps and sanitized evidence.
 - [ ] Document triage decision, owner, containment criteria and rollback.
 - [ ] Identify single points of failure and recovery dependencies.
 - [ ] Publish a concise SOC operations review and lessons learned.
