@@ -7,7 +7,7 @@
 
 This project develops a practical security-operations workflow for a segmented virtual lab: collect relevant telemetry, assess suspicious activity, investigate with repeatable procedures, and communicate findings and remediation decisions. The emphasis is on operational ownership, evidence quality, and risk-based response, not simply installing security tools.
 
-**Integrity note:** Earlier lab exercises established remote syslog reception, firewall log review, host monitoring scripts, and packet capture workflows. A Wazuh SIEM virtual machine is present in the current Proxmox inventory; agent connectivity has now been verified; indexing, alert generation, and data retention have **not yet been validated** for this publication. No fictional alerts, detection rates, or response-time improvements are claimed.
+**Integrity note:** Earlier lab exercises established remote syslog reception, firewall log review, host monitoring scripts, and packet capture workflows. A Wazuh SIEM virtual machine is present in the current Proxmox inventory; agent connectivity has now been verified; endpoint security-alert generation has now been verified; dashboard indexing, custom test-event matching, and data retention have **not yet been validated** for this publication. No fictional alerts, detection rates, or response-time improvements are claimed.
 
 ## Operational objectives
 
@@ -23,7 +23,7 @@ This project develops a practical security-operations workflow for a segmented v
 | --- | --- | --- |
 | OPNsense | Zone routing and firewall logs | VM and bridge assignments verified; current rules and forwarded log coverage pending |
 | Linux log server | Receive remote syslog, organize events, support analysis | Previously configured and tested in lab; service health, ingestion, and retention require fresh verification |
-| Wazuh SIEM | Centralized security analytics, endpoint monitoring | SSH-accessible manager; TCP 1514 and 1515 reached from Ubuntu; manager reported two registered agents active. Event indexing and detection remain unverified |
+| Wazuh SIEM | Centralized security analytics, endpoint monitoring | SSH-accessible manager; TCP 1514 and 1515 reachable from Ubuntu; two agents active. Manager's alerts.json includes LAB-Ubuntu sudo and PAM events, establishing ingestion, rule matching, and alert file output. Dashboard indexing unverified |
 | Linux endpoints | System events and security telemetry | Agent enrollment, sources, and coverage pending |
 | Capture workflow | Collect selected network packet evidence | Earlier lab workflow described; capture and chain of custody demonstration pending |
 
@@ -55,7 +55,9 @@ Operator-supplied command results, sanitized for publication:
 - SSH to the Wazuh manager succeeded.
 - On the manager, `agent_control -l` reported **LAB-Ubuntu** and **OPNsense** as **Active**, with the manager's local entry also Active/Local.
 
-**Limitations:** Port connectivity and agent registration do not establish ingestion, alert generation, dashboard indexing, detection efficacy or service uptime. Earlier connection failures may reflect startup sequencing after the infrastructure outage, but that cause is not proven.
+**Additional ingestion evidence:** The manager's `alerts.json` contained recent agent 001 (`LAB-Ubuntu`) events for Wazuh rules **5402** (successful sudo to root), **5501** (PAM session opened), and **5502** (PAM session closed), collected from `journald`. This verifies that LAB-Ubuntu security telemetry is ingested, decoded, matched to built-in rules, and written to local alert output. A manual grep for `SOC-VALIDATION` returned no alert matches; it remains unverified whether that test event was generated, collected, or filtered below the alert threshold.
+
+**Limitations:** Local alert output does not establish dashboard indexing, complete source coverage, detection efficacy, or service uptime. Earlier connection failures may reflect startup sequencing after the infrastructure outage, but that cause is not proven.
 
 ## Investigation workflow
 
@@ -89,7 +91,8 @@ No performance claims will be published until measured in a reproducible test.
 - [ ] Validate Linux receiver with a uniquely tagged test event and corresponding stored log.
 - [ ] Verify log rotation, available disk space and file permissions.
 - [x] Verify Wazuh manager is accessible and registered LAB-Ubuntu and OPNsense agents report **Active** (2026-11-18 local / 2026-11-19 UTC).
-- [ ] Verify security events from enrolled agents actually reach manager and are searchable.
+- [x] Verify LAB-Ubuntu authentication and sudo events reach the manager and generate alerts in `alerts.json`.
+- [ ] Confirm Wazuh dashboard indexing and searching; test a unique custom event (not yet present in alerts.json).
 - [ ] Produce one authorized test case, with timestamps and sanitized evidence.
 - [ ] Document triage decision, owner, containment criteria and rollback.
 - [ ] Identify single points of failure and recovery dependencies.
