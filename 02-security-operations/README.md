@@ -59,6 +59,24 @@ Operator-supplied command results, sanitized for publication:
 
 **Limitations:** Local alert output does not establish dashboard indexing, complete source coverage, detection efficacy, or service uptime. Earlier connection failures may reflect startup sequencing after the infrastructure outage, but that cause is not proven.
 
+## Custom SOC detection rule — offline test verified
+
+**Validation state:** Wazuh `wazuh-logtest` succeeded against custom rule **100108**, level **5**, on November 18, 2026 local time. The initial candidate ID conflicted with existing rules; a unique ID was used instead. Existing reverse-shell detection (rule 100100) was preserved.
+
+Test event:
+
+```text
+Nov 18 19:20:07 labserver SOC-VALIDATION[6514]: Authorized SOC telemetry validation
+```
+
+Observed test output:
+
+- Phase 1 extracted `program_name: SOC-VALIDATION`, timestamp, and host.
+- Phase 2: `No decoder matched`. This did not prevent rule evaluation against the pre-decoded program name.
+- Phase 3 selected rule **100108**, level **5**, description **Authorized SOC validation event detected**, with **Alert to be generated**.
+
+**Important limitation:** This is an **offline rule-engine test**. A fresh live event, post-deployment manager restart, agent ingestion, and matching alert in `alerts.json` are **not yet verified**. Do not describe this as end-to-end detection until those checks pass.
+
 ## Investigation workflow
 
 | Stage | Analyst/lead action | Required evidence |
@@ -93,7 +111,8 @@ No performance claims will be published until measured in a reproducible test.
 - [x] Verify Wazuh manager is accessible and registered LAB-Ubuntu and OPNsense agents report **Active** (2026-11-18 local / 2026-11-19 UTC).
 - [x] Verify LAB-Ubuntu authentication and sudo events reach the manager and generate alerts in `alerts.json`.
 - [x] Verify two uniquely tagged `SOC-VALIDATION` events are present in the source Ubuntu journal.
-- [ ] Determine whether the custom events are ingested, and whether built-in detection rules match them.
+- [x] Validate rule 100108 using `wazuh-logtest` (offline detection-engine test).
+- [ ] Restart the manager in a planned lab maintenance window, generate a new live event, and confirm rule 100108 in manager alerts.
 - [ ] Confirm Wazuh dashboard indexing and searching.
 - [ ] Produce one authorized test case, with timestamps and sanitized evidence.
 - [ ] Document triage decision, owner, containment criteria and rollback.
