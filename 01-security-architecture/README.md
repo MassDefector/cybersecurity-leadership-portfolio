@@ -1,7 +1,7 @@
 # 01 — Enterprise Security Architecture
 
 **Project type:** Independent cybersecurity homelab  
-**Status:** Current-state documentation in progress — host and VM inventory captured on 2026-11-18  
+**Status:** Current-state documentation in progress — initial inventory captured on 2026-11-18; subsequent availability recovery recorded  
 **Technology:** Proxmox VE, OPNsense, Linux
 
 ## Executive summary
@@ -23,7 +23,7 @@ Source: administrator-supplied output from `pveversion`, `qm list`, `pvesh ... n
 - **Host memory:** 31 GiB reported; 14 GiB used and approximately 17 GiB available at collection; 8 GiB swap configured, none in use.
 - **Virtual machines:** Seven configured; six running at capture time.
 - **Running roles inferred from VM names:** OPNsense firewall (2 GiB allocated), two Alpine test endpoints (512 MiB each), a red-team router (1 GiB), a red-team test endpoint (512 MiB), and a Wazuh SIEM (8 GiB).
-- **Stopped workload:** One Ubuntu lab VM (2 GiB allocated).
+- **At initial capture:** One Ubuntu lab VM was stopped (2 GiB allocated). **Subsequent update:** The VM was restarted successfully following a storage-availability incident; SSH jump-host access was restored. See [incident case study](storage-availability-incident.md).
 - **Virtual bridges:** Five active bridges: one host-addressed bridge and four without host IP addresses shown. Physical uplink binding, VM network attachments, and firewall enforcement remain unverified.
 - **Capacity caution:** RAM allocation is not a measure of guest utilization. No claims are made about the SIEM being fully operational based on VM power status alone.
 
@@ -61,7 +61,7 @@ flowchart TD
     BR20["vmbr20 — DMZ"]
     BR30["vmbr30 — TEST-NET"]
     BR40["vmbr40 — REDNET"]
-    UB["LAB-Ubuntu (stopped)"]
+    UB["LAB-Ubuntu (stopped at initial capture; later recovered)"]
     WZ["Wazuh-SIEM"]
     DMZ["DMZ-Alpine"]
     TEST["TEST-Alpine"]
@@ -137,6 +137,12 @@ _To be completed after the current-state assessment._
 
 All exercises take place on personally owned or explicitly authorized infrastructure. Published artifacts will exclude passwords, tokens, real identifying information, sensitive configuration details, and any military operational data. Planned capabilities will not be represented as implemented until verified.
 
+## Incident response and resilience case study
+
+A later SSD storage outage interrupted the administrative jump-host workflow. Diagnostics, recovery actions, verified outcomes, and remaining risks are documented in the [Storage Availability Incident Case Study](storage-availability-incident.md). This case reinforces the distinction between network security controls and operational resilience.
+
 ## Lessons learned
 
-_To be added after evidence collection and validation._
+- Single points of failure in management access can constrain incident response even when the segmented virtual network remains intact.
+- A SMART health result of PASSED does not establish that an intermittently inaccessible disk or SATA connection is reliable.
+- Backups and alternate management access should be treated as documented controls, with restore tests and ownership, rather than assumed capabilities.
