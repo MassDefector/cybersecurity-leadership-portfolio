@@ -35,7 +35,7 @@ Source: administrator-supplied output from `pveversion`, `qm list`, `pvesh ... n
 | DMZ | `10.10.20.0/24` | Isolated test services |
 | SOC | `10.10.30.0/24` | Security monitoring |
 
-**Verification pending:** These subnets reflect earlier lab exercises; current interface assignments, firewall rules, and active workloads must be revalidated before this document is treated as a current-state architecture. Public diagrams will use illustrative addresses or redacted details.
+**Verification pending:** These subnets reflect earlier lab exercises; bridge names and attached systems have been verified, but active guest addressing, routing, firewall rules, and workloads still require validation. TEST-NET is not currently confirmed as a dedicated SOC segment. Public diagrams will use illustrative addresses or redacted details.
 
 ## Architecture inventory — to be verified
 
@@ -46,6 +46,71 @@ Source: administrator-supplied output from `pveversion`, `qm list`, `pvesh ... n
 | Linux server(s) | Internal services and log reception | Sanitized service inventory |
 | DMZ workload(s) | Controlled test systems | Sanitized network and service descriptions |
 | Security monitoring | Wazuh SIEM VM running; ingestion not verified | Data-flow description and alert examples |
+
+## Verified virtual network topology (2026-11-18)
+
+The topology below is based on the Proxmox VM NIC assignments and `/etc/network/interfaces`. It shows **Layer 2 connections**, not verified firewall allow/deny behavior. Specific VM MAC addresses and the real host management address are intentionally omitted.
+
+```mermaid
+flowchart TD
+    HOME["Home LAN / upstream gateway"]
+    PVE["Proxmox management host"]
+    BR0["vmbr0 — uplink / management"]
+    FW["OPNsense VM"]
+    BR10["vmbr10 — LAB-LAN"]
+    BR20["vmbr20 — DMZ"]
+    BR30["vmbr30 — TEST-NET"]
+    BR40["vmbr40 — REDNET"]
+    UB["LAB-Ubuntu (stopped)"]
+    WZ["Wazuh-SIEM"]
+    DMZ["DMZ-Alpine"]
+    TEST["TEST-Alpine"]
+    RR["red-router (two NICs)"]
+    RED["red-attack"]
+    HOME --- BR0
+    BR0 --- PVE
+    BR0 --- FW
+    FW --- BR10
+    FW --- BR20
+    FW --- BR30
+    BR10 --- UB
+    BR10 --- WZ
+    BR20 --- DMZ
+    BR30 --- TEST
+    BR30 --- RR
+    RR --- BR40
+    BR40 --- RED
+```
+
+### Verified bridge mappings
+
+| Segment | Bridge | Connected VMs / interfaces | Physical uplink |
+| --- | --- | --- | --- |
+| Home uplink / management | `vmbr0` | Proxmox host, OPNsense net0 | `nic0` |
+| LAB-LAN | `vmbr10` | OPNsense net1, LAB-Ubuntu net0, Wazuh-SIEM net0 | None |
+| DMZ | `vmbr20` | OPNsense net2, DMZ-Alpine net0 | None |
+| TEST-NET | `vmbr30` | OPNsense net3, TEST-Alpine net0, red-router net0 | None |
+| REDNET | `vmbr40` | red-router net1, red-attack net0 | None |
+
+### Important architecture observations
+
+- The Proxmox management interface and OPNsense upstream/WAN-facing NIC share `vmbr0`, which connects to the home network. Management-plane hardening and exposure require review.
+- `vmbr10`, `vmbr20`, `vmbr30`, and `vmbr40` have no physical bridge ports configured. This confirms no direct physical uplinks in the base network file; logical forwarding via the connected routers remains possible.
+- Wazuh-SIEM is attached to LAB-LAN (`vmbr10`), **not** a separate SOC bridge. Do not represent TEST-NET as a dedicated SOC network without additional evidence.
+- `red-router` is dual-homed between TEST-NET and REDNET. Its forwarding/NAT/firewall configuration must be inspected before claiming REDNET is isolated from other networks.
+- Proxmox VM NIC settings include `firewall=1` for LAB-Ubuntu, TEST-Alpine, red-attack, and Wazuh-SIEM. This is an interface-level setting, **not proof** that Proxmox firewall enforcement is enabled or effective.
+- OPNsense interface mappings and inter-zone policies are not yet independently verified.
+- Device names such as REDNET and DMZ identify intended lab roles, not validated trust boundaries.
+
+### Next validation steps
+
+- [x] Map VM NICs to Proxmox bridges.
+- [x] Verify bridge port definitions.
+- [ ] Confirm OPNsense interface assignment, routing, and inter-zone policies.
+- [ ] Inspect red-router IP forwarding, NAT, and filtering without publishing live sensitive rules.
+- [ ] Verify host and Proxmox guest firewall enablement and rule scope.
+- [ ] Test allow/deny flows between zones and record results.
+- [ ] Review Proxmox management-plane access from the home network.
 
 ## Security design and risk decisions
 
@@ -60,7 +125,7 @@ _To be completed after the current-state assessment._
 ## Evidence and validation plan
 
 - [x] Capture initial sanitized Proxmox VM inventory and active bridge list.
-- [ ] Verify VM-to-bridge attachments, NIC uplinks, and the full bridge configuration.
+- [x] Verify VM-to-bridge attachments, NIC uplinks, and the base bridge configuration.
 - [ ] Confirm current OPNsense interfaces and security zones.
 - [ ] Document permitted and denied inter-segment flows.
 - [ ] Create an accurate, sanitized architecture diagram.
