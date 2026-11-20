@@ -119,7 +119,26 @@ A fresh authorized test event from LAB-Ubuntu generated the following observed m
 
 **Scope and caveats:** This proves the specified lab-zone traffic block for the tested flow, not universal isolation across all ports, routes, or zones. Three packet alerts represent retries of a single connection attempt; they are not evidence of three independent attacks. The Wazuh agent restricts firewall log collection to blocked events on `vtnet2` and `vtnet3`; substantial upstream/WAN background traffic is intentionally excluded. The OPNsense manager-side agent was separately reported active, but this specific firewall test was collected and attributed to the **LAB-Ubuntu agent**, not directly to the OPNsense agent.
 
-**Next validation:** Test repeat-block correlation rule `100106` against its prerequisite `100105`; confirm that repetitive attempts are correlated and that benign traffic is not unnecessarily escalated. Evaluate dashboard indexing and log retention.
+**Next validation:** Offline rule escalation verified for `100105` and `100106`; validate nonmatching/negative scenarios, live repeated attempts under controlled conditions, dashboard indexing, and log retention.
+
+## Multi-stage firewall alert escalation — offline validation
+
+**Test date:** 2026-11-19 (lab local)  
+**Method:** `wazuh-logtest` with synthetic OPNsense `filterlog` entries; this is **not** a live network escalation test.
+
+A simulated DMZ source made blocked TCP connection attempts to a protected management destination on TCP/4444. The existing `pf` decoder extracted `action=block`, `protocol=tcp`, source and destination addresses and destination port.
+
+| Rule | Function | Level | Evidence |
+| --- | --- | --- | --- |
+| `100104` | General blocked TCP packet | 5 | Previously verified with live DMZ-to-TEST-NET events |
+| `100105` | Blocked access to protected Wazuh management endpoint on configured ports | 10 | Offline logtest matched the synthetic management-access event |
+| `100106` | Correlation of repeated `100105` events sharing source and destination over a 60-second threshold | 12 | Offline logtest reported rule `100106`, `frequency: 5`, and `Alert to be generated` |
+
+The offline sequence produced two level-12 correlation outcomes, demonstrating rule matching and stateful escalation in the test session. The pasted output also included repeated synthetic entries; therefore this run **does not establish** whether five distinct live connection attempts reliably produce a correlation alert. `mail: True` was displayed in logtest; email delivery was not verified.
+
+**Operational limitations:** No real traffic to the management server was generated for this correlation test; event deduplication, false positive rate, downstream notification, indexing, and real-world escalation timing remain unmeasured.
+
+**Planned improvements:** Repeat with uniquely generated events in a fresh test session, confirm alert behavior for below-threshold and nonmatching source/destination scenarios, and conduct a narrowly scoped live validation only after confirming firewall protections.
 
 ## Investigation workflow
 
