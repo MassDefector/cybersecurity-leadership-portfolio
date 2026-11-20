@@ -136,6 +136,14 @@ A simulated DMZ source made blocked TCP connection attempts to a protected manag
 
 The offline sequence produced two level-12 correlation outcomes, demonstrating rule matching and stateful escalation in the test session. The pasted output also included repeated synthetic entries; therefore this run **does not establish** whether five distinct live connection attempts reliably produce a correlation alert. `mail: True` was displayed in logtest; email delivery was not verified.
 
+### Negative correlation test — different source addresses
+
+**Method:** A fresh `wazuh-logtest` session with five synthetic blocked management-access events targeting the same protected destination, split as three events from one DMZ source and two from a different DMZ source. The initial attempt contained a malformed timestamp and was excluded; the operator reran the corrected test.
+
+**Reported result:** The operator confirmed the corrected test generated **no rule 100106 escalation**. The qualifying events were designed to match the lower-severity management-access rule 100105, while neither source independently reached the five-event threshold.
+
+**Conclusion:** This negative test supports source-IP-specific correlation and reduces risk of aggregating unrelated sources into a high-severity event. It is an **offline test**, not a live event or quantified false-positive rate. A separate negative test using differing destinations remains pending.
+
 **Operational limitations:** No real traffic to the management server was generated for this correlation test; event deduplication, false positive rate, downstream notification, indexing, and real-world escalation timing remain unmeasured.
 
 **Planned improvements:** Repeat with uniquely generated events in a fresh test session, confirm alert behavior for below-threshold and nonmatching source/destination scenarios, and conduct a narrowly scoped live validation only after confirming firewall protections.
