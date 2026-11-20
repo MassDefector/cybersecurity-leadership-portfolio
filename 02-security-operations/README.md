@@ -99,6 +99,28 @@ A fresh authorized test event from LAB-Ubuntu generated the following observed m
 
 **Measurement caveat:** The source event timestamp has one-second precision, so the apparent ~1.75-second difference is illustrative, not a validated end-to-end latency SLA. This one successful event does not establish detection coverage, retention or sustained availability.
 
+## Verified network segmentation and SIEM detection (2026-11-19 local)
+
+**Test:** An authorized DMZ test endpoint attempted TCP SSH access to a TEST-NET endpoint. OPNsense enforced an explicit logged block on its DMZ interface and relayed three dropped TCP SYN events to the Linux log receiver. Wazuh's LAB-Ubuntu agent collected the restricted firewall log and the manager generated three level-5 alerts using existing rule **100104**.
+
+| Evidence | Observed result |
+| --- | --- |
+| Origin zone | DMZ / OPNsense `vtnet2` |
+| Destination zone | TEST-NET |
+| Attempt | TCP port 22 (SSH); one connection attempt |
+| Firewall action | `block,in`, with three observed SYN retries |
+| Firewall rule | Existing explicit logged DMZ-to-TEST-NET block |
+| Collection path | OPNsense `filterlog` → remote rsyslog file → LAB-Ubuntu Wazuh agent |
+| Wazuh decoder | `pf` |
+| Wazuh matched rule | `100104`, description: firewall blocked TCP |
+| Alert level | 5 |
+| Manager evidence | Three records in `alerts.json`, source agent `001` (LAB-Ubuntu) |
+| Result | **PASS:** enforced block, remote log reception, endpoint collection, parsing, rule match and alert generation verified |
+
+**Scope and caveats:** This proves the specified lab-zone traffic block for the tested flow, not universal isolation across all ports, routes, or zones. Three packet alerts represent retries of a single connection attempt; they are not evidence of three independent attacks. The Wazuh agent restricts firewall log collection to blocked events on `vtnet2` and `vtnet3`; substantial upstream/WAN background traffic is intentionally excluded. The OPNsense manager-side agent was separately reported active, but this specific firewall test was collected and attributed to the **LAB-Ubuntu agent**, not directly to the OPNsense agent.
+
+**Next validation:** Test repeat-block correlation rule `100106` against its prerequisite `100105`; confirm that repetitive attempts are correlated and that benign traffic is not unnecessarily escalated. Evaluate dashboard indexing and log retention.
+
 ## Investigation workflow
 
 | Stage | Analyst/lead action | Required evidence |
@@ -127,14 +149,15 @@ No performance claims will be published until measured in a reproducible test.
 
 ## Current priorities and validation checklist
 
-- [ ] Confirm OPNsense log forwarding destination and enabled event categories.
-- [ ] Validate Linux receiver with a uniquely tagged test event and corresponding stored log.
+- [x] Verify current OPNsense firewall block-event forwarding to LAB-Ubuntu for a controlled DMZ-to-TEST-NET test; other categories not yet verified.
+- [x] Verify remote syslog file received the controlled OPNsense firewall test events.
 - [ ] Verify log rotation, available disk space and file permissions.
 - [x] Verify Wazuh manager is accessible and registered LAB-Ubuntu and OPNsense agents report **Active** (2026-11-18 local / 2026-11-19 UTC).
 - [x] Verify LAB-Ubuntu authentication and sudo events reach the manager and generate alerts in `alerts.json`.
 - [x] Verify two uniquely tagged `SOC-VALIDATION` events are present in the source Ubuntu journal.
 - [x] Validate rule 100108 using `wazuh-logtest` (offline detection-engine test).
 - [x] Generate a new live LAB-Ubuntu event and verify rule 100108 in manager `alerts.json` (confirmed 2026-11-19 03:34 UTC).
+- [x] Verify live OPNsense block event ingestion and Wazuh manager alert generation through LAB-Ubuntu (rule 100104).
 - [ ] Confirm Wazuh dashboard indexing and searching.
 - [x] Produce one authorized detection test case, with timestamps and sanitized evidence.
 - [ ] Document triage decision, owner, containment criteria and rollback.
