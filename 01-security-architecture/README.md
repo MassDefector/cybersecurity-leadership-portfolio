@@ -99,8 +99,12 @@ flowchart TD
 - Wazuh-SIEM is attached to LAB-LAN (`vmbr10`), **not** a separate SOC bridge. Do not represent TEST-NET as a dedicated SOC network without additional evidence.
 - `red-router` is dual-homed between TEST-NET and REDNET. Its forwarding/NAT/firewall configuration must be inspected before claiming REDNET is isolated from other networks.
 - Proxmox VM NIC settings include `firewall=1` for LAB-Ubuntu, TEST-Alpine, red-attack, and Wazuh-SIEM. This is an interface-level setting, **not proof** that Proxmox firewall enforcement is enabled or effective.
-- OPNsense interface mappings and inter-zone policies are not yet independently verified.
+- OPNsense DMZ and TEST-NET interface assignments and one explicit logged cross-zone block policy have been verified; complete inter-zone policy coverage remains under review.
 - Device names such as REDNET and DMZ identify intended lab roles, not validated trust boundaries.
+
+### Verified segmentation control (2026-11-19 local)
+
+The OPNsense DMZ and TEST-NET virtual interfaces were confirmed active. An existing logged firewall rule blocked a controlled TCP/22 attempt from a DMZ endpoint toward TEST-NET. Three blocked SYN retries were present in centralized firewall logs, and Wazuh generated matching level-5 alerts through rule 100104. This validates **one specific zone-to-zone denied flow**, not the totality of the network isolation design. See [Project 02 — Network detection evidence](../02-security-operations/README.md#verified-network-segmentation-and-siem-detection-2026-11-19-local).
 
 ### Next validation steps
 
@@ -109,7 +113,8 @@ flowchart TD
 - [ ] Confirm OPNsense interface assignment, routing, and inter-zone policies.
 - [ ] Inspect red-router IP forwarding, NAT, and filtering without publishing live sensitive rules.
 - [ ] Verify host and Proxmox guest firewall enablement and rule scope.
-- [ ] Test allow/deny flows between zones and record results.
+- [x] Record one tested DMZ-to-TEST-NET denied SSH flow with firewall and Wazuh evidence.
+- [ ] Validate additional inter-zone allow and deny flows.
 - [ ] Review Proxmox management-plane access from the home network.
 
 ## Security design and risk decisions
@@ -129,7 +134,8 @@ _To be completed after the current-state assessment._
 - [ ] Confirm current OPNsense interfaces and security zones.
 - [ ] Document permitted and denied inter-segment flows.
 - [ ] Create an accurate, sanitized architecture diagram.
-- [ ] Validate segmentation with controlled tests.
+- [x] Validate one DMZ-to-TEST-NET SSH block with controlled test and correlated SIEM evidence.
+- [ ] Extend segmentation validation to additional protocols and zones.
 - [ ] Document at least three risks and their mitigations.
 - [ ] Write a one-page executive summary of findings and next steps.
 
