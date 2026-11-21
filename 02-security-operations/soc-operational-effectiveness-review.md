@@ -18,7 +18,7 @@
 | Host detection | **Verified live** | LAB-Ubuntu journal test event → rule `100108`, level 5, in manager `alerts.json` |
 | Prioritized detection logic | **Verified offline** | Rules `100105` (level 10) and `100106` (level 12) triggered under simulated conditions |
 | Negative rule tests | **Verified offline** | Mixed sources avoided level-12 escalation; alternate destination matched level-5 base rule rather than level-10 management rule |
-| Dashboard / investigation workflow | **Not validated** | Alert indexing, case handling, acknowledgement and closure evidence outstanding |
+| Dashboard indexing / investigation workflow | **Indexing verified for tested alerts; case workflow open** | Three known rule-100104 live alerts searchable in dashboard; acknowledgement and closure evidence outstanding |
 | Sustained telemetry / retention | **Not measured** | Completeness, log loss, log rotation and retention controls require review |
 | Recovery readiness | **At risk** | Previous SSD outage interrupted the administrative jump host; backup reported, restore test outstanding |
 
@@ -29,7 +29,7 @@
 | Priority | Risk / business consequence | Evidence / uncertainty | Recommended treatment |
 | --- | --- | --- | --- |
 | **High** | Monitoring and management access disrupted by storage or jump-host dependency | SSD temporarily became inaccessible; service restored after restart; underlying cause unresolved | Inspect connection/hardware, monitor errors, test VM restore, document alternate administrative access |
-| **High** | Incomplete visibility creates missed or late detection | Wazuh log collector deliberately restricts firewall collection to blocked DMZ/TEST-NET events; full source inventory and dashboard coverage unmeasured | Approve log-source scope, identify excluded high-value events, validate each source with a tracked test |
+| **High** | Incomplete visibility creates missed or late detection | Wazuh dashboard search confirmed for three known firewall alerts, but collector restricts firewall collection to blocked DMZ/TEST-NET events; full source inventory and dashboard coverage unmeasured | Approve log-source scope, identify excluded high-value events, validate each source with a tracked test |
 | **High** | Unowned alerts can remain untriaged even when detection succeeds | Rules generate alerts; no verified case acknowledgement, escalation, handoff or closure workflow | Adopt a single-operator RACI and response playbook; record triage and containment decisions |
 | **Medium** | Inter-zone rules may permit unintended paths | One deny path verified; complete policy review, exceptions and red-router forwarding not validated | Inventory allow/deny paths, review exceptions, run representative controlled tests |
 | **Medium** | Correlation may overcount packet retransmissions or miss certain conditions | Three blocked SYN packets produced three alerts; synthetic correlation fired, but duplicate handling and real-world alert precision unmeasured | Define event-versus-incident grouping, test distinct attempts, quantify duplicate volume and tune only with evidence |
@@ -66,7 +66,7 @@ In this single-operator lab, the same person may fill multiple roles, but the **
 
 | Horizon | Priority actions | Exit evidence / decision gate |
 | --- | --- | --- |
-| **Days 1–30: Stabilize** | Complete storage/connection checks; verify backup integrity and isolated restore; create telemetry inventory; test dashboard search; implement case template and on-call/owner decision tree | Restore evidence, signed log-source inventory, one end-to-end dashboard-searchable alert and one documented triage case |
+| **Days 1–30: Stabilize** | Complete storage/connection checks; verify backup integrity and isolated restore; create telemetry inventory; record verified dashboard alert search and expand indexing coverage checks; implement case template and on-call/owner decision tree | Restore evidence, signed log-source inventory, one end-to-end dashboard-searchable alert and one documented triage case |
 | **Days 31–60: Measure** | Run repeatable source heartbeat/ingestion probes; inspect rotation and retention; review firewall exceptions and red-router paths; test false-positive grouping and targeted rule correlation | Initial KPI baseline, retention record, zone test matrix, documented alert-tuning decisions |
 | **Days 61–90: Operationalize** | Tabletop an escalation and recovery; rehearse a reversible containment; measure acknowledgement and restoration; review residual risks and capacity | Closed incident exercise, approved playbook, risk register with accountable owners, 90-day leadership review |
 
