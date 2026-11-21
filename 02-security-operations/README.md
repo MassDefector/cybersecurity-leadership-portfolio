@@ -7,7 +7,7 @@
 
 This project develops a practical security-operations workflow for a segmented virtual lab: collect relevant telemetry, assess suspicious activity, investigate with repeatable procedures, and communicate findings and remediation decisions. The emphasis is on operational ownership, evidence quality, and risk-based response, not simply installing security tools.
 
-**Integrity note:** Earlier lab exercises established remote syslog reception, firewall log review, host monitoring scripts, and packet capture workflows. A Wazuh SIEM virtual machine is present in the current Proxmox inventory; agent connectivity has now been verified; endpoint security-alert generation has now been verified; dashboard indexing, custom test-event matching, and data retention have **not yet been validated** for this publication. No fictional alerts, detection rates, or response-time improvements are claimed.
+**Integrity note:** Earlier lab exercises established remote syslog reception, firewall log review, host monitoring scripts, and packet capture workflows. A Wazuh SIEM virtual machine is present in the current Proxmox inventory; agent connectivity has now been verified; endpoint security-alert generation has now been verified; dashboard indexing for the validated firewall alerts has been confirmed; full coverage and data retention have **not yet been validated**. No fictional alerts, detection rates, or response-time improvements are claimed.
 
 ## Executive assessment and improvement roadmap
 
@@ -165,6 +165,12 @@ This was offline synthetic telemetry; no live management access, production aler
 
 **Planned improvements:** Repeat with uniquely generated events in a fresh test session, confirm alert behavior for below-threshold and nonmatching source/destination scenarios, and conduct a narrowly scoped live validation only after confirming firewall protections.
 
+## Searchable Wazuh dashboard alert evidence (2026-11-20)
+
+The lab operator verified that all **three previously confirmed live OPNsense firewall alerts** are searchable in the Wazuh dashboard (rule `100104`, level 5, source agent `LAB-Ubuntu`). A dashboard screenshot showed **3 hits** for the November 19 firewall test, with the expected alert description and rule metadata. This validates the path from blocked test traffic through OPNsense, remote rsyslog, Wazuh agent and manager, indexed alert storage, and dashboard retrieval.
+
+**Caveat:** The three results represent blocked TCP SYN retries during one controlled connection attempt, not three incidents. Successful retrieval of these records does not establish an indexing reliability SLA, retention duration, storage capacity, complete event coverage, or alert response effectiveness.
+
 ## Investigation workflow
 
 | Stage | Analyst/lead action | Required evidence |
@@ -202,7 +208,7 @@ No performance claims will be published until measured in a reproducible test.
 - [x] Validate rule 100108 using `wazuh-logtest` (offline detection-engine test).
 - [x] Generate a new live LAB-Ubuntu event and verify rule 100108 in manager `alerts.json` (confirmed 2026-11-19 03:34 UTC).
 - [x] Verify live OPNsense block event ingestion and Wazuh manager alert generation through LAB-Ubuntu (rule 100104).
-- [ ] Confirm Wazuh dashboard indexing and searching.
+- [x] Confirm dashboard indexing and searching: three live OPNsense rule-100104 alerts visible in dashboard (2026-11-20).
 - [x] Produce one authorized detection test case, with timestamps and sanitized evidence.
 - [ ] Document triage decision, owner, containment criteria and rollback.
 - [ ] Identify single points of failure and recovery dependencies.
