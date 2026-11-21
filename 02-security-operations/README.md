@@ -9,6 +9,10 @@ This project develops a practical security-operations workflow for a segmented v
 
 **Integrity note:** Earlier lab exercises established remote syslog reception, firewall log review, host monitoring scripts, and packet capture workflows. A Wazuh SIEM virtual machine is present in the current Proxmox inventory; agent connectivity has now been verified; endpoint security-alert generation has now been verified; dashboard indexing, custom test-event matching, and data retention have **not yet been validated** for this publication. No fictional alerts, detection rates, or response-time improvements are claimed.
 
+## Executive assessment and improvement roadmap
+
+The [SOC Operational Effectiveness — Executive Assessment](soc-operational-effectiveness-review.md) consolidates validated security controls, readiness gaps, a prioritized risk register, proposed governance and KPIs, and a 30/60/90-day improvement plan. It distinguishes live evidence from offline tests and planned capabilities.
+
 ## Operational objectives
 
 1. Establish repeatable ingestion and retention of firewall and Linux security events.
@@ -202,7 +206,7 @@ No performance claims will be published until measured in a reproducible test.
 - [x] Produce one authorized detection test case, with timestamps and sanitized evidence.
 - [ ] Document triage decision, owner, containment criteria and rollback.
 - [ ] Identify single points of failure and recovery dependencies.
-- [ ] Publish a concise SOC operations review and lessons learned.
+- [x] Publish an executive SOC operational effectiveness review and prioritized 30/60/90-day roadmap (planning assessment; readiness not certified).
 
 ## Management perspective
 
