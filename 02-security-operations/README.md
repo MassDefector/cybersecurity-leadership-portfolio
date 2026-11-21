@@ -247,3 +247,7 @@ The manager successfully restarted (`systemctl is-active wazuh-manager`: `active
 
 **Status:** Critical rule tested offline and new configuration loaded; **live end-to-end alert delivery at warning/critical thresholds is not verified** (host remains below threshold). The current collector's exact raw event format and ongoing threshold monitoring warrant continued validation. Avoid filling production/lab disks solely to trigger alerts.
 
+
+### Expansion to LAB-Ubuntu (operator-confirmed, 2026-11-21 UTC)
+
+LAB-Ubuntu agent `001` is active on Wazuh Manager and runs its existing `df -P` command collector every 360 seconds; its root filesystem baseline was 37% utilized. The host-neutral descriptions for centralized rules `100110` (70–84%, level 7) and `100111` (≥85%, level 12) were applied on the manager; the operator reports rule tests looked good and the manager was restarted. Wazuh-SIEM baseline root utilization was 43%. No additional collector was deployed. **Remaining validation:** obtain an actual agent-attributed threshold alert through the live collection/indexing pipeline; no disk-filling test is warranted.
