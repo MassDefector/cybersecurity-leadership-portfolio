@@ -171,6 +171,18 @@ The lab operator verified that all **three previously confirmed live OPNsense fi
 
 **Caveat:** The three results represent blocked TCP SYN retries during one controlled connection attempt, not three incidents. Successful retrieval of these records does not establish an indexing reliability SLA, retention duration, storage capacity, complete event coverage, or alert response effectiveness.
 
+## Remote syslog rotation incident — remediation validated (2026-11-20)
+
+The Linux log receiver's scheduled `logrotate.service` failed on November 19 and at 00:23 local on November 20 with repeated `Permission denied` errors when attempting to rotate remote logs. The remote-syslog policy used an execution identity that lacked consistent access to the log files, which were split between `labadmin:labadmin` and `syslog:adm`.
+
+A corrected, fresh audit executed under the `syslog:adm` identity verified read/write access to **92 non-OPNsense active logs** and write/traverse access to the five relevant log directories. Following a targeted change to the remote-syslog rotation identity, the operator verified:
+
+- `logrotate.service` finished successfully at **17:03 local**, November 20, reporting `Result=success` and `ExecMainStatus=0`.
+- The OPNsense firewall's active remote log remained writable and contained fresh events at **17:04 local** after the rotation.
+- No broad `chmod` or recursive ownership change was necessary.
+
+**Status:** Successful logrotate execution and continued **firewall-to-rsyslog delivery** verified. **Still open:** a new qualifying DMZ/TEST-NET event must be checked in Wazuh after rotation; the recent WAN examples are excluded by the agent filter. Long-term scheduled reliability, accurate retention duration, and indexer lifecycle have not yet been measured.
+
 ## Investigation workflow
 
 | Stage | Analyst/lead action | Required evidence |
@@ -201,7 +213,8 @@ No performance claims will be published until measured in a reproducible test.
 
 - [x] Verify current OPNsense firewall block-event forwarding to LAB-Ubuntu for a controlled DMZ-to-TEST-NET test; other categories not yet verified.
 - [x] Verify remote syslog file received the controlled OPNsense firewall test events.
-- [ ] Verify log rotation, available disk space and file permissions.
+- [x] Identify remote logrotate access mismatch and verify successful service execution after targeted identity correction (2026-11-20); next scheduled run and post-rotation Wazuh ingestion still pending.
+- [ ] Measure actual retention behavior and assess indexer lifecycle/storage.
 - [x] Verify Wazuh manager is accessible and registered LAB-Ubuntu and OPNsense agents report **Active** (2026-11-18 local / 2026-11-19 UTC).
 - [x] Verify LAB-Ubuntu authentication and sudo events reach the manager and generate alerts in `alerts.json`.
 - [x] Verify two uniquely tagged `SOC-VALIDATION` events are present in the source Ubuntu journal.
