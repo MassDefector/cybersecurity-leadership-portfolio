@@ -236,3 +236,14 @@ A recent laboratory storage interruption reinforces that monitoring and manageme
 ## Publication safeguards
 
 All examples are from authorized lab activity. Exclude personal IP addresses, MAC addresses, private hostnames, credentials, secrets, raw logs identifying home systems, and any military operational information. Mark simulated events explicitly and distinguish observed results from planned capabilities.
+
+## SIEM disk-capacity detection — validated rule and service activation (2026-11-21 UTC)
+
+To reduce risk of SIEM outage from uncontrolled disk growth, configured root filesystem capacity monitoring using the existing Wazuh Manager `df -P` command collector (360-second interval) and custom rules `100110` (warning at 70–84%, level 7) and `100111` (critical at ≥85%, level 12). Baseline root utilization was 43%; the indexer directory was approximately 33 MB.
+
+Initial rule iterations failed because of duplicate local rule IDs and incorrect Wazuh decoder/parent-rule matching. A cleaned `local_rules.xml` preserved existing SOC detection rules and used the verified Wazuh command-output rule hierarchy. On Wazuh 4.14.9, an **offline synthetic 88% disk reading** triggered rule **100111**, level **12**, with “Alert to be generated.” Earlier 75% / 43% positive-negative tests passed on the old `ossec:` prefix; the final corrected `wazuh:` prefix rules have **not yet both been re-tested** in the supplied evidence.
+
+The manager successfully restarted (`systemctl is-active wazuh-manager`: `active`); no matching error/warning entries appeared in the inspected manager log; and `wazuh-logcollector` reported `Monitoring output of command(360): df -P` at 02:23:55 UTC.
+
+**Status:** Critical rule tested offline and new configuration loaded; **live end-to-end alert delivery at warning/critical thresholds is not verified** (host remains below threshold). The current collector's exact raw event format and ongoing threshold monitoring warrant continued validation. Avoid filling production/lab disks solely to trigger alerts.
+
