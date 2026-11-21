@@ -251,3 +251,9 @@ The manager successfully restarted (`systemctl is-active wazuh-manager`: `active
 ### Expansion to LAB-Ubuntu (operator-confirmed, 2026-11-21 UTC)
 
 LAB-Ubuntu agent `001` is active on Wazuh Manager and runs its existing `df -P` command collector every 360 seconds; its root filesystem baseline was 37% utilized. The host-neutral descriptions for centralized rules `100110` (70–84%, level 7) and `100111` (≥85%, level 12) were applied on the manager; the operator reports rule tests looked good and the manager was restarted. Wazuh-SIEM baseline root utilization was 43%. No additional collector was deployed. **Remaining validation:** obtain an actual agent-attributed threshold alert through the live collection/indexing pipeline; no disk-filling test is warranted.
+
+### Remote/local syslog routing separation (validated 2026-11-20, local time)
+
+Assessment identified that `/etc/rsyslog.d/10-remote.conf` used the default ruleset's `*.* ?RemoteLogs` followed by `& stop`, allowing local messages to be consumed by the remote catch-all; `/var/log/syslog` and `/var/log/auth.log` were each zero bytes at inspection. The operator replaced this with dedicated remote TCP/UDP 514 inputs bound to a `remote_collection` ruleset using the existing hostname/program log-file template. `rsyslogd -N1` had been clean before the change; the latest startup log showed successful restart at **18:45:04** and no recurrence of the previous “STOP is followed by unreachable statements” warning.
+
+**Verified after change:** A `logger -p user.notice -t ROUTE-CHECK` event appeared in `/var/log/syslog` at **18:45:12**; OPNsense `filterlog.log` continued receiving network events through **18:45:42**. **Remaining test:** generate a fresh controlled DMZ-to-TEST-NET blocked connection and verify the event is processed into Wazuh rule `100104` after the routing change. Other local paths (e.g., `auth.log`) and long-term service health remain to be validated.
