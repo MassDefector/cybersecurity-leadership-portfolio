@@ -263,3 +263,22 @@ Assessment identified that `/etc/rsyslog.d/10-remote.conf` used the default rule
 Built-in systemd rules `40700` (grouping, level 0) and `40704` (generic `status=1/FAILURE`, level 5) were evaluated using synthetic syslog-format events. A modern systemd message `rsyslog.service: Failed with result 'exit-code'.` matched only `40700` and produced no alert; `rsyslog.service: Main process exited, ... status=1/FAILURE` matched `40704`; normal service startup produced no alert.
 
 Two custom child rules were prepared in `local_rules.xml`: **100113** (level 10, matches rsyslog failed-result message via `40700`) and **100114** (level 10, elevates rsyslog process failures via `40704`). Operator reports all three offline tests successful, including the normal-start negative test. **Remaining:** verify the manager reloads the rules without errors, compare actual journald-forwarded event fields/format, and confirm live alert indexing. No deliberate service outage was induced.
+
+
+### SOC email notification pipeline — validated (2026-11-21 UTC)
+
+Configured a local-only Postfix SMTP relay on Wazuh-SIEM, forwarding over authenticated STARTTLS to Apple iCloud Mail on TCP 587. During initial testing, outbound email bounced locally (`postfix/error`, `relay=none`) because the Postfix installation's `default_transport` and `relay_transport` were both set to `error`; resetting them to `smtp` and `relay`, respectively, corrected delivery. An externally received test message confirmed successful email delivery. Credentials are **not** stored in the portfolio.
+
+Wazuh email notifications were enabled and configured with a high global mail threshold and per-rule `alert_by_email` for the following detection IDs:
+
+| Rule | Condition | Level |
+| --- | --- | --- |
+| `100110` | Root filesystem 70–84% | 7 |
+| `100111` | Root filesystem ≥85% | 12 |
+| `100113` | Rsyslog failed-result notification | 10 |
+| `100114` | Rsyslog process failure | 10 |
+| `100115` | LAB-Ubuntu Wazuh-agent disconnection | 10 |
+
+**End-to-end verified:** A real authorized `SOC-VALIDATION` event on LAB-Ubuntu triggered rule `100108`; the user confirmed receipt of the corresponding Wazuh email through the manager → Maild → Postfix → iCloud → recipient path. The temporary `alert_by_email` option was subsequently removed from rule `100108`, and the manager was restarted, per operator report.
+
+**Evidence boundary:** This proves Wazuh alert-to-email delivery for the validation event, not that each of the five operational detections has independently delivered a live email. Future work: verify alert selectivity/volume, rate limits and suppression, manager-offline notification blind spots, and recipient handling; do not publish mailbox addresses or app-specific passwords.
