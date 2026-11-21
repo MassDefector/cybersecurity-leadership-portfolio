@@ -144,6 +144,19 @@ The offline sequence produced two level-12 correlation outcomes, demonstrating r
 
 **Conclusion:** This negative test supports source-IP-specific correlation and reduces risk of aggregating unrelated sources into a high-severity event. It is an **offline test**, not a live event or quantified false-positive rate. A separate negative test using differing destinations remains pending.
 
+### Negative hierarchy test — alternate destination
+
+**Method:** A fresh offline `wazuh-logtest` session received five synthetic blocked TCP events from the same source: three addressed to the configured Wazuh management IP, followed by two addressed to a different lab IP. All five decoded with the `pf` decoder.
+
+| Events | Destination category | Expected rule | Observed |
+| --- | --- | --- | --- |
+| 1–3 | Configured Wazuh management destination | `100105` / level 10 | All three matched `100105` / level 10 |
+| 4–5 | Alternate lab destination | `100104` / level 5 | Both matched `100104` / level 5 |
+
+**Result: PASS.** No level-12 `100106` outcome was reported. The two alternate-destination events were not eligible for correlation because prerequisite rule `100105` constrains the destination to the Wazuh management server. Thus the test validates destination-specific rule hierarchy and lack of erroneous escalation **but does not independently validate** the `<same_dstip />` correlation operator. Proving that operator requires a test-only prerequisite capable of matching multiple destination addresses.
+
+This was offline synthetic telemetry; no live management access, production alert, outbound email notification, or real-world false-positive rate was demonstrated.
+
 **Operational limitations:** No real traffic to the management server was generated for this correlation test; event deduplication, false positive rate, downstream notification, indexing, and real-world escalation timing remain unmeasured.
 
 **Planned improvements:** Repeat with uniquely generated events in a fresh test session, confirm alert behavior for below-threshold and nonmatching source/destination scenarios, and conduct a narrowly scoped live validation only after confirming firewall protections.
