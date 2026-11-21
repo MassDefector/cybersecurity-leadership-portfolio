@@ -19,7 +19,7 @@
 | Prioritized detection logic | **Verified offline** | Rules `100105` (level 10) and `100106` (level 12) triggered under simulated conditions |
 | Negative rule tests | **Verified offline** | Mixed sources avoided level-12 escalation; alternate destination matched level-5 base rule rather than level-10 management rule |
 | Dashboard indexing / investigation workflow | **Indexing verified for tested alerts; case workflow open** | Three known rule-100104 live alerts searchable in dashboard; acknowledgement and closure evidence outstanding |
-| Sustained telemetry / retention | **Rotation recovered; ongoing assurance open** | Linux logrotate service successfully executed after permission correction and remote OPNsense syslog resumed; post-rotation Wazuh ingestion, completeness and retention still unverified |
+| Sustained telemetry / retention | **Rotation recovered; ongoing assurance open** | Linux logrotate service successfully executed after permission correction and remote OPNsense syslog resumed; post-rotation Wazuh detection operator-reported successful (new excerpts not captured), while completeness, scheduled-run reliability and retention remain unverified |
 | Recovery readiness | **At risk** | Previous SSD outage interrupted the administrative jump host; backup reported, restore test outstanding |
 
 *Interpretation:* A live firewall alert establishes that one monitored control worked at that time, **not** that all zones are isolated or all threats are detected. The alternate-destination test does not independently prove the `same_dstip` operator, because the prerequisite management rule matches only one protected destination.
