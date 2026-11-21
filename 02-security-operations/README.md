@@ -181,7 +181,7 @@ A corrected, fresh audit executed under the `syslog:adm` identity verified read/
 - The OPNsense firewall's active remote log remained writable and contained fresh events at **17:04 local** after the rotation.
 - No broad `chmod` or recursive ownership change was necessary.
 
-**Status:** Successful logrotate execution and continued **firewall-to-rsyslog delivery** verified. **Still open:** a new qualifying DMZ/TEST-NET event must be checked in Wazuh after rotation; the recent WAN examples are excluded by the agent filter. Long-term scheduled reliability, accurate retention duration, and indexer lifecycle have not yet been measured.
+**Status:** Successful logrotate execution and continued **firewall-to-rsyslog delivery** verified. **Follow-up reported:** The operator confirmed the controlled post-rotation DMZ-to-TEST-NET blocked-traffic and corresponding Wazuh rule-100104 checks looked good. Exact new log excerpts/timestamps were not supplied, so record this as **operator-reported verification**, distinct from the earlier directly observed alerts. **Still open:** repeated scheduled-run reliability, actual retention duration, and indexer lifecycle policy. Long-term scheduled reliability, accurate retention duration, and indexer lifecycle have not yet been measured.
 
 ## Investigation workflow
 
