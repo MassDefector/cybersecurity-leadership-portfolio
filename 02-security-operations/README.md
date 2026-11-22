@@ -282,3 +282,20 @@ Wazuh email notifications were enabled and configured with a high global mail th
 **End-to-end verified:** A real authorized `SOC-VALIDATION` event on LAB-Ubuntu triggered rule `100108`; the user confirmed receipt of the corresponding Wazuh email through the manager → Maild → Postfix → iCloud → recipient path. The temporary `alert_by_email` option was subsequently removed from rule `100108`, and the manager was restarted, per operator report.
 
 **Evidence boundary:** This proves Wazuh alert-to-email delivery for the validation event, not that each of the five operational detections has independently delivered a live email. Future work: verify alert selectivity/volume, rate limits and suppression, manager-offline notification blind spots, and recipient handling; do not publish mailbox addresses or app-specific passwords.
+
+
+### Disk capacity rules — parent-rule correction and verification
+
+Operational testing uncovered an incorrect parent rule in disk-capacity detections `100110` (70–84%) and `100111` (≥85%). Realistic `ossec: output: 'df -P': ...` test events decoded under Wazuh built-in command-monitoring rule `530`; the custom warning and critical rules had `<if_sid>200</if_sid>` and therefore did not fire. Changing their parent to `<if_sid>530</if_sid>` corrected both conditions.
+
+Verified using `wazuh-logtest` against three synthetic root-filesystem measurements:
+
+| Utilization | Matched rule | Level | Email eligibility |
+| --- | --- | --- | --- |
+| 37% | `100116` temporary healthy-state rule | 3 | False |
+| 75% | `100110` disk warning | 7 | True |
+| 88% | `100111` disk critical | 12 | True |
+
+The temporary healthy-state rule `100116` was removed before activation to avoid roughly 480 routine healthy-state alerts daily across two Ubuntu endpoints (360-second polling). Operator subsequently reported the manager restart/configuration checks looked good; this is not independent verification of live threshold-email delivery.
+
+**Monitoring design decision:** Preserve the existing 360-second native `df -P` collectors, keep actionable warning/critical alerts indexed, and assess stateful alert notifications separately to avoid repeated email for unchanged disk conditions. The Wazuh Maild and Postfix path was previously validated with live rule `100108`. Future validation: real end-to-end threshold event, notification deduplication/recovery, and incident escalation.
